@@ -17,9 +17,11 @@ const today = () => new Date().toISOString().split("T")[0];
 interface QuestionCardProps {
   question: Question;
   index: number;
+  cardLabel?: string;
+  pickMessageFn?: () => string;
 }
 
-export default function QuestionCard({ question, index }: QuestionCardProps) {
+export default function QuestionCard({ question, index, cardLabel, pickMessageFn }: QuestionCardProps) {
   const { label, color } = topicMeta[question.topic] ?? {
     label: question.topic,
     color: "bg-gray-100 text-gray-700",
@@ -50,10 +52,12 @@ export default function QuestionCard({ question, index }: QuestionCardProps) {
       try {
         await addSolvedQuestion(question.id);
         const count = await getSolvedCount();
-        setModal({ message: pickMessage(), count });
+        const picker = pickMessageFn ?? pickMessage;
+        setModal({ message: picker(), count });
       } catch {
         // Still show modal even if Supabase fails
-        setModal({ message: pickMessage(), count: 0 });
+        const picker = pickMessageFn ?? pickMessage;
+        setModal({ message: picker(), count: 0 });
       }
     });
   };
@@ -74,7 +78,7 @@ export default function QuestionCard({ question, index }: QuestionCardProps) {
       >
         {/* Card header */}
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-gray-400">שאלה {index + 1} להיום</span>
+          <span className="text-xs font-medium text-gray-400">{cardLabel ?? `שאלה ${index + 1} להיום`}</span>
           <div className="flex items-center gap-2">
             {done && (
               <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700">

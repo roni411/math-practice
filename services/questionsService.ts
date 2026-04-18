@@ -62,6 +62,37 @@ export async function getRandomQuestionByTopic(topic: string): Promise<Question 
   return data[Math.floor(Math.random() * data.length)];
 }
 
+export async function getUnsolvedQuestions(): Promise<Question[]> {
+  const supabase = getSupabaseClient();
+
+  const [all, { data: solvedRows, error: solvedError }] = await Promise.all([
+    getAllQuestions(),
+    supabase.from("solved_questions").select("question_id"),
+  ]);
+
+  if (solvedError) throw new Error(`getUnsolvedQuestions: ${solvedError.message}`);
+
+  const solvedIds = new Set((solvedRows ?? []).map((r) => r.question_id));
+  const unsolved = all.filter((q) => !solvedIds.has(q.id));
+
+  // Interleave: probability → geometry → derivatives → repeat (skip when bucket empty)
+  const TOPIC_ORDER = ["probability", "geometry", "derivatives"] as const;
+  const buckets: Record<string, Question[]> = { probability: [], geometry: [], derivatives: [] };
+  for (const q of unsolved) {
+    (buckets[q.topic] ??= []).push(q);
+  }
+
+  const result: Question[] = [];
+  let slot = 0;
+  while (TOPIC_ORDER.some((t) => (buckets[t]?.length ?? 0) > 0)) {
+    const topic = TOPIC_ORDER[slot % 3];
+    slot++;
+    if ((buckets[topic]?.length ?? 0) > 0) result.push(buckets[topic].shift()!);
+  }
+
+  return result;
+}
+
 export async function getTwoRandomQuestionsDifferentTopics(): Promise<[Question, Question]> {
   const all = await getAllQuestions();
   if (all.length < 2) {
