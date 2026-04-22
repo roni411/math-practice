@@ -16,10 +16,10 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-10 max-w-sm w-full flex flex-col items-center gap-6 text-center">
-        <div className="text-5xl">✈️</div>
+        <div className="text-5xl">📚</div>
 
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold text-gray-900">שאלות לתיפור</h1>
+          <h1 className="text-2xl font-bold text-gray-900">שאלות לתרגול במתמטיקה</h1>
           <p className="text-sm text-gray-400">בגרות 4 יחידות • קוד 471</p>
         </div>
 
