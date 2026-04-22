@@ -52,14 +52,6 @@ export default async function UnsolvedPage() {
               <p className="text-sm text-gray-400">{questions!.length} שאלות נותרו</p>
             </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3 flex items-center gap-3">
-              <span className="text-2xl">🎯</span>
-              <div>
-                <p className="text-sm font-semibold text-blue-800">כל השאלות שלא נפתרו</p>
-                <p className="text-xs text-blue-500">סדר: הסתברות • גיאומטריה • חשבון • חוזר חלילה</p>
-              </div>
-            </div>
-
             {questions!.length === 0 ? (
               <div className="text-center py-16 flex flex-col items-center gap-3">
                 <span className="text-5xl">🏆</span>
