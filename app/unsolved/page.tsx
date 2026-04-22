@@ -29,7 +29,7 @@ export default async function UnsolvedPage() {
       <header className="bg-white border-b border-gray-100 px-4 py-4 shadow-sm">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">שאלות לתיפור</h1>
+            <h1 className="text-2xl font-bold text-gray-900">שאלות לתרגול במתמטיקה</h1>
             <p className="text-sm text-gray-400 mt-0.5">בגרות 4 יחידות • קוד 471</p>
           </div>
           <div className="flex flex-col items-end gap-1">

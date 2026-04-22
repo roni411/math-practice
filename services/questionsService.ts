@@ -77,11 +77,25 @@ export async function getUnsolvedQuestions(
   const solvedIds = new Set((solvedRows ?? []).map((r) => r.question_id));
   const unsolved = all.filter((q) => !solvedIds.has(q.id));
 
+  // Shuffle helper
+  const shuffle = <T,>(arr: T[]): T[] => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
   // Interleave: probability → geometry → derivatives → repeat (skip when bucket empty)
   const TOPIC_ORDER = ["probability", "geometry", "derivatives"] as const;
   const buckets: Record<string, Question[]> = { probability: [], geometry: [], derivatives: [] };
   for (const q of unsolved) {
     (buckets[q.topic] ??= []).push(q);
+  }
+  // Shuffle each topic bucket so questions aren't always in chronological order
+  for (const t of TOPIC_ORDER) {
+    buckets[t] = shuffle(buckets[t]);
   }
 
   const result: Question[] = [];

@@ -55,9 +55,13 @@ interface Props {
   message: string;
   solvedCount: number;
   onClose: () => void;
+  theme?: "pilot" | "exam";
 }
 
-export default function MotivationalModal({ message, solvedCount, onClose }: Props) {
+export default function MotivationalModal({ message, solvedCount, onClose, theme = "pilot" }: Props) {
+  const icon      = theme === "exam" ? "🏆" : "✈️";
+  const floatIcon = theme === "exam" ? "🏆" : "✈️";
+  const countText = theme === "exam" ? "בדרך למבחן" : "בדרך לטייס";
   // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -85,7 +89,7 @@ export default function MotivationalModal({ message, solvedCount, onClose }: Pro
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
         onClick={onClose}
       >
-        {/* Floating planes */}
+        {/* Floating icons */}
         {[...Array(6)].map((_, i) => (
           <span
             key={i}
@@ -96,7 +100,7 @@ export default function MotivationalModal({ message, solvedCount, onClose }: Pro
               animationDelay: `${i * 0.18}s`,
             }}
           >
-            ✈️
+            {floatIcon}
           </span>
         ))}
 
@@ -106,7 +110,7 @@ export default function MotivationalModal({ message, solvedCount, onClose }: Pro
           onClick={(e) => e.stopPropagation()}
         >
           {/* Big icon */}
-          <div className="text-6xl">✈️</div>
+          <div className="text-6xl">{icon}</div>
 
           {/* Message */}
           <p className="text-xl font-bold text-gray-800 leading-snug">{message}</p>
@@ -114,7 +118,7 @@ export default function MotivationalModal({ message, solvedCount, onClose }: Pro
           {/* Count */}
           <div className="bg-blue-50 rounded-2xl px-5 py-3 w-full">
             <p className="text-sm font-semibold text-blue-700">
-              כבר פתרת <span className="text-2xl font-bold">{solvedCount}</span> שאלות בדרך לטייס!
+              כבר פתרת <span className="text-2xl font-bold">{solvedCount}</span> שאלות {countText}!
             </p>
           </div>
 

@@ -19,15 +19,15 @@ interface QuestionCardProps {
   index: number;
   cardLabel?: string;
   pickMessageFn?: () => string;
+  theme?: "pilot" | "exam";
 }
 
-export default function QuestionCard({ question, index, cardLabel, pickMessageFn }: QuestionCardProps) {
+export default function QuestionCard({ question, index, cardLabel, pickMessageFn, theme = "pilot" }: QuestionCardProps) {
   const { label, color } = topicMeta[question.topic] ?? {
     label: question.topic,
     color: "bg-gray-100 text-gray-700",
   };
 
-  const [solutionVisible, setSolutionVisible] = useState(false);
   const [done, setDone] = useState(false);
   const [modal, setModal] = useState<{ message: string; count: number } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -69,6 +69,7 @@ export default function QuestionCard({ question, index, cardLabel, pickMessageFn
           message={modal.message}
           solvedCount={modal.count}
           onClose={() => setModal(null)}
+          theme={theme}
         />
       )}
 
@@ -119,28 +120,17 @@ export default function QuestionCard({ question, index, cardLabel, pickMessageFn
           </button>
 
           <div className="flex gap-2">
-            {/* Reveal / open solution */}
-            {!solutionVisible ? (
-              <button
-                onClick={() => setSolutionVisible(true)}
-                disabled={!question.solution_url}
-                className="flex-1 py-2.5 px-4 rounded-xl border-2 border-blue-600 text-blue-600 font-semibold text-sm
-                  active:bg-blue-50 transition-colors
-                  disabled:opacity-40 disabled:cursor-not-allowed
-                  hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-              >
-                הצג פתרון
-              </button>
-            ) : (
-              <button
-                onClick={() => question.solution_url && window.open(question.solution_url, "_blank")}
-                className="flex-1 py-2.5 px-4 rounded-xl border-2 border-blue-600 bg-blue-50 text-blue-700 font-semibold text-sm
-                  active:bg-blue-100 transition-colors
-                  hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-              >
-                פתח פתרון ↗
-              </button>
-            )}
+            {/* Open solution directly */}
+            <button
+              onClick={() => question.solution_url && window.open(question.solution_url, "_blank")}
+              disabled={!question.solution_url}
+              className="flex-1 py-2.5 px-4 rounded-xl border-2 border-blue-600 text-blue-600 font-semibold text-sm
+                active:bg-blue-50 transition-colors
+                disabled:opacity-40 disabled:cursor-not-allowed
+                hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+            >
+              פתח פתרון ↗
+            </button>
 
             {/* Solved button */}
             {!done ? (
@@ -156,7 +146,7 @@ export default function QuestionCard({ question, index, cardLabel, pickMessageFn
               </button>
             ) : (
               <div className="flex-1 py-2.5 px-4 rounded-xl bg-green-50 border-2 border-green-200 text-green-600 font-semibold text-sm text-center">
-                ✈️ כל הכבוד!
+                {theme === "exam" ? "🏆" : "✈️"} כל הכבוד!
               </div>
             )}
           </div>

@@ -18,6 +18,7 @@ export default function UnsolvedQuestionList({ questions }: Props) {
           index={i}
           cardLabel={`שאלה ${i + 1} מתוך ${questions.length}`}
           pickMessageFn={pickExamPrepMessage}
+          theme="exam"
         />
       ))}
     </div>
