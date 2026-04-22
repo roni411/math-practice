@@ -1,5 +1,7 @@
 import { getSupabaseClient } from "@/lib/supabase";
+import { SupabaseClient } from "@supabase/supabase-js";
 import { Question, DailyQuestions, NewQuestion } from "@/types";
+import { Database } from "@/lib/database.types";
 
 const TABLE = "questions_471" as const;
 
@@ -62,12 +64,12 @@ export async function getRandomQuestionByTopic(topic: string): Promise<Question 
   return data[Math.floor(Math.random() * data.length)];
 }
 
-export async function getUnsolvedQuestions(): Promise<Question[]> {
-  const supabase = getSupabaseClient();
-
+export async function getUnsolvedQuestions(
+  client: SupabaseClient<Database>
+): Promise<Question[]> {
   const [all, { data: solvedRows, error: solvedError }] = await Promise.all([
     getAllQuestions(),
-    supabase.from("solved_questions").select("question_id"),
+    client.from("solved_questions").select("question_id"),
   ]);
 
   if (solvedError) throw new Error(`getUnsolvedQuestions: ${solvedError.message}`);

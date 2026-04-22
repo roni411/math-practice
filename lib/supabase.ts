@@ -1,11 +1,10 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import { Database } from "./database.types";
 
-// Lazy singleton — only created when first needed so the build doesn't fail
-// if the env vars are not yet set.
-let _client: SupabaseClient<Database> | null = null;
+// Browser singleton — used by client components
+let _client: ReturnType<typeof createBrowserClient<Database>> | null = null;
 
-export function getSupabaseClient(): SupabaseClient<Database> {
+export function getSupabaseClient() {
   if (!_client) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -17,7 +16,7 @@ export function getSupabaseClient(): SupabaseClient<Database> {
       );
     }
 
-    _client = createClient<Database>(url, key);
+    _client = createBrowserClient<Database>(url, key);
   }
   return _client;
 }
