@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { Question } from "@/types";
-import MotivationalModal, { pickMessage } from "./MotivationalModal";
+import MotivationalModal, { pickMessage, pickExamPrepMessage } from "./MotivationalModal";
 import { addSolvedQuestion, getSolvedCount } from "@/services/questionsService";
 
 const topicMeta: Record<string, { label: string; color: string }> = {
@@ -22,7 +22,7 @@ interface QuestionCardProps {
   theme?: "pilot" | "exam";
 }
 
-export default function QuestionCard({ question, index, cardLabel, pickMessageFn, theme = "pilot" }: QuestionCardProps) {
+export default function QuestionCard({ question, index, cardLabel, pickMessageFn, theme = "exam" }: QuestionCardProps) {
   const { label, color } = topicMeta[question.topic] ?? {
     label: question.topic,
     color: "bg-gray-100 text-gray-700",
@@ -52,11 +52,11 @@ export default function QuestionCard({ question, index, cardLabel, pickMessageFn
       try {
         await addSolvedQuestion(question.id);
         const count = await getSolvedCount();
-        const picker = pickMessageFn ?? pickMessage;
+        const picker = pickMessageFn ?? pickExamPrepMessage;
         setModal({ message: picker(), count });
       } catch {
         // Still show modal even if Supabase fails
-        const picker = pickMessageFn ?? pickMessage;
+        const picker = pickMessageFn ?? pickExamPrepMessage;
         setModal({ message: picker(), count: 0 });
       }
     });

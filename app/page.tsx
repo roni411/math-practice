@@ -56,8 +56,8 @@ export default async function HomePage() {
             <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3 flex items-center gap-3">
               <span className="text-2xl">📚</span>
               <div>
-                <p className="text-sm font-semibold text-blue-800">2 שאלות להיום</p>
-                <p className="text-xs text-blue-500">פתור את שתי השאלות ותבדוק את עצמך!</p>
+                <p className="text-sm font-semibold text-blue-800">4 שאלות להיום</p>
+                <p className="text-xs text-blue-500">פתור את ארבע השאלות ותבדוק את עצמך!</p>
               </div>
             </div>
 

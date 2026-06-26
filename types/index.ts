@@ -22,5 +22,5 @@ export interface NewQuestion {
 
 export interface DailyQuestions {
   date: string;
-  questions: [Question, Question];
+  questions: Question[];
 }

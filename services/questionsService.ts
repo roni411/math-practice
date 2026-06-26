@@ -29,14 +29,14 @@ export async function deleteQuestion(id: string): Promise<void> {
 
 export async function addSolvedQuestion(questionId: string): Promise<void> {
   const { error } = await getSupabaseClient()
-    .from("solved_questions")
+    .from("solved_questions_r2")
     .insert({ question_id: questionId });
   if (error) throw new Error(`addSolvedQuestion: ${error.message}`);
 }
 
 export async function getSolvedCount(): Promise<number> {
   const { count, error } = await getSupabaseClient()
-    .from("solved_questions")
+    .from("solved_questions_r2")
     .select("*", { count: "exact", head: true });
   if (error) throw new Error(`getSolvedCount: ${error.message}`);
   return count ?? 0;
@@ -44,7 +44,7 @@ export async function getSolvedCount(): Promise<number> {
 
 export async function resetSolvedQuestions(): Promise<void> {
   const { error } = await getSupabaseClient()
-    .from("solved_questions")
+    .from("solved_questions_r2")
     .delete()
     .neq("id", "00000000-0000-0000-0000-000000000000"); // delete all rows
   if (error) throw new Error(`resetSolvedQuestions: ${error.message}`);
@@ -69,7 +69,7 @@ export async function getUnsolvedQuestions(
 ): Promise<Question[]> {
   const [all, { data: solvedRows, error: solvedError }] = await Promise.all([
     getAllQuestions(),
-    client.from("solved_questions").select("question_id"),
+    client.from("solved_questions_r2").select("question_id"),
   ]);
 
   if (solvedError) throw new Error(`getUnsolvedQuestions: ${solvedError.message}`);
@@ -163,29 +163,30 @@ function makeSeededRandom(seed: number): () => number {
 
 // ─── Daily questions ──────────────────────────────────────────────────────────
 
-// Pair rotation: 3 pairs × 3 topics, no two consecutive days share a pair.
-const TOPIC_PAIRS: [string, string][] = [
-  ["probability", "geometry"],
-  ["probability", "derivatives"],
-  ["geometry",    "derivatives"],
-];
+// 4 questions per day across all 3 topics.
+// Each day one topic gets 2 questions, the others get 1 each (rotating).
+// Day % 3 == 0: probability×2, geometry×1, derivatives×1
+// Day % 3 == 1: probability×1, geometry×2,  derivatives×1
+// Day % 3 == 2: probability×1, geometry×1,  derivatives×2
+const TOPIC_ORDER = ["probability", "geometry", "derivatives"] as const;
+
+// How many times each topic has been picked in days 0..(d-1)?
+// Each 3-day cycle uses each topic 4 times total (2+1+1).
+const USAGE_OFFSETS: Record<string, number[]> = {
+  probability: [0, 2, 3],
+  geometry:    [0, 1, 3],
+  derivatives: [0, 1, 2],
+};
 
 const EPOCH = new Date("2025-01-01").getTime();
 function dayIndex(dateStr: string): number {
   return Math.floor((new Date(dateStr).getTime() - EPOCH) / 86_400_000);
 }
 
-// How many times has a topic been used in days 0..(d-1)?
-// probability appears in pairs 0 & 1  (days where d%3 ∈ {0,1})
-// geometry    appears in pairs 0 & 2  (days where d%3 ∈ {0,2})
-// derivatives appears in pairs 1 & 2  (days where d%3 ∈ {1,2})
 function usagesBefore(topic: string, d: number): number {
-  const full = Math.floor(d / 3) * 2;
+  const full = Math.floor(d / 3) * 4;
   const r = d % 3;
-  if (topic === "probability") return full + Math.min(r, 2);       // r=0→0, r=1→1, r=2→2
-  if (topic === "geometry")    return full + (r >= 1 ? 1 : 0);    // r=0→0, r≥1→1 (day 2 adds 1 more via pair 2… wait handled by full)
-  if (topic === "derivatives") return full + (r >= 2 ? 1 : 0);
-  return 0;
+  return full + (USAGE_OFFSETS[topic]?.[r] ?? 0);
 }
 
 // Shuffle a pool once using the topic name as a stable seed, then cycle through it.
@@ -202,19 +203,22 @@ function stableShuffled(pool: Question[], topic: string): Question[] {
 export async function getTodaysQuestions(): Promise<DailyQuestions> {
   const today = new Date().toISOString().split("T")[0];
   const dIdx  = dayIndex(today);
-  const [topicA, topicB] = TOPIC_PAIRS[((dIdx % 3) + 3) % 3];
+  const doubleTopic = TOPIC_ORDER[((dIdx % 3) + 3) % 3];
 
   const all = await getAllQuestions();
 
-  const pickQuestion = (topic: string): Question => {
+  const pickQuestion = (topic: string, indexOffset = 0): Question => {
     const pool = all.filter((q) => q.topic === topic);
     if (pool.length === 0) throw new Error(`No questions for topic: ${topic}`);
     const shuffled = stableShuffled(pool, topic);
-    return shuffled[usagesBefore(topic, dIdx) % shuffled.length];
+    return shuffled[(usagesBefore(topic, dIdx) + indexOffset) % shuffled.length];
   };
 
-  return {
-    date: today,
-    questions: [pickQuestion(topicA), pickQuestion(topicB)],
-  };
+  const questions: Question[] = [];
+  for (const topic of TOPIC_ORDER) {
+    questions.push(pickQuestion(topic, 0));
+    if (topic === doubleTopic) questions.push(pickQuestion(topic, 1));
+  }
+
+  return { date: today, questions };
 }

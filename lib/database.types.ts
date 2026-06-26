@@ -54,6 +54,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      solved_questions_r2: {
+        Row: {
+          id: string;
+          question_id: string;
+          solved_at: string;
+        };
+        Insert: {
+          id?: string;
+          question_id: string;
+          solved_at?: string;
+        };
+        Update: {
+          id?: string;
+          question_id?: string;
+          solved_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
